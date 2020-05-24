@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用snabbdom实现更新</title>
+</head>
+<body>
+    <div id="app"></div>
+    <script src="../../node_modules/snabbdom/dist/snabbdom.js"></script>
+    <script>
+        const obj = {}
+
+        // 解构
+        const {init, h} = snabbdom
+        // 1.获取patch函数，使用init方法就会得到一个patch函数
+        // patch函数，对比两个虚拟dom，执行dom操作
+        const patch = init([])
+        let vnode// 保存之前旧的虚拟dom 
+        
+        function defineReactive (obj, key, val) {
+            // 对传入obj进行访问拦截
+            Object.defineProperty(obj, key, {
+                get () {
+                console.log('get ' + key)
+                return val
+                },
+                set (newVal) {
+                    if (newVal !== val) {
+                        console.log('set ' + key + ':' + newVal)
+                        val = newVal
+                        // 更新函数
+                        update()
+                    }
+                }
+            })
+        }
+
+        // 使用虚拟dom做更新
+        function update() {
+            // 上一次的vnode，和最新的h('div#app', obj.foo)做比较
+            vnode = patch(vnode, h('div#app', obj.foo))
+        }
+        function update() {
+            // 通过ID直接访问DOM元素
+            app.innerText = obj.foo
+        }
+
+        defineReactive (obj, 'foo', new Date().toLocaleTimeString())
+        // obj.foo = new Date().toLocaleTimeString()
+
+        // 执行初始化
+        // 如果参数一接收一个真实dom 就不会做比较，直接把后面的东西转换成真实的dom替换前面的数组
+        vnode = patch(app, h('div#app', obj.foo))
+        console.log(vnode)
+
+        setInterval(() => {
+            obj.foo = new Date().toLocaleTimeString()
+        }, 1000)
+    </script>
+</body>
+</html>
